@@ -23,7 +23,7 @@ defmodule Admin.Mixfile do
   def application do
     [mod: {Admin, []},
      applications: [:phoenix, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex]]
+                    :phoenix_ecto, :postgrex, :feeds]]
   end
 
   # Specifies which paths to compile per environment.
@@ -34,13 +34,16 @@ defmodule Admin.Mixfile do
   #
   # Type `mix help deps` for examples and options.
   defp deps do
-    [{:phoenix, "~> 1.1.4"},
-     {:postgrex, ">= 0.0.0"},
-     {:phoenix_ecto, "~> 2.0"},
-     {:phoenix_html, "~> 2.4"},
-     {:phoenix_live_reload, "~> 1.0", only: :dev},
-     {:gettext, "~> 0.9"},
-     {:cowboy, "~> 1.0"}]
+    [
+      {:phoenix, "~> 1.1.4"},
+      {:postgrex, ">= 0.0.0"},
+      {:phoenix_ecto, "~> 2.0"},
+      {:phoenix_html, "~> 2.4"},
+      {:phoenix_live_reload, "~> 1.0", only: :dev},
+      {:gettext, "~> 0.9"},
+      {:cowboy, "~> 1.0"},
+      {:feeds, in_umbrella: true}
+    ]
   end
 
   # Aliases are shortcut or tasks specific to the current project.
