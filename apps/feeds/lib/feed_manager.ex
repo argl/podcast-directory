@@ -1,76 +1,95 @@
 defmodule Feeds.FeedManager do
 
   alias Feeds.FeedFetcher
+  use Timex
+
 
   @podcast_registry_name Feeds.Podcast.Registry
   @feed_fetcher_registry_name Feeds.FeedFetcher.Registry
   @evmgr_name Feeds.EventManager
 
-  defmodule CompletionHandler do
-    use GenEvent
-    def handle_event(event, proc) do
-      case event do
-        {:feed_fetcher_update_end, fetcher} -> send proc, {:ok, fetcher}
-        _ -> nil
-      end
-      {:ok, proc}
-    end
+  # either {:ok, feed_fetcher_pid} or {:error, reason}
+  def ensure_feed(url) do
+    ensure_feed(url, 0)
   end
-
-  def try_feed(url) do
-    try_feed(url, 0)
+  def ensure_feed(url, retries) when retries > 5 do
+    {:error, :too_many_redirects_from_canonical_url}
   end
-
-  def try_feed(url, retries) when retries > 5 do
-    {:error, {:too_many_feed_url_redirects_on_self_or_first_page, url}}
-  end
-  def try_feed(url, retries) do
-    feed_info = %Feeds.FeedFetcher.FeedInfo{ url: url, interval: 3600 }
-    # create our checker event manager, install our event handler and start
-    # the fetcher (unsupervised, just for checking)
-    {:ok, evmgr} = GenEvent.start_link([])
-    GenEvent.add_mon_handler(evmgr, CompletionHandler, self())
-    
-    {:ok, fetcher} = FeedFetcher.start_link(feed_info, evmgr)
-
-    result = receive do
+  def ensure_feed(url, retries) do
+    # check if we have the feed in the database
+    case check_for_existing_feed(url) do
       {:ok, fetcher} -> {:ok, fetcher}
-        # check if there was any error (awkward, but on running feeds errors could be transitional and should be ignored)
-        case FeedFetcher.error(fetcher) do
-          nil -> 
-            # add feed to registry here
-            # save data first
-            feed_info = FeedFetcher.feed_info(fetcher)
-            # stop our fetcher
-            :ok = FeedFetcher.stop(fetcher)
-            # re-start fetcher via feed registry and our data
-            # this makes it supervised and using the global event managers
-            {:ok, feed_id} = Feeds.FeedFetcher.Registry.start_feed(feed_info)
-            {:ok, feed_id}
-          err -> 
-            FeedFetcher.stop(fetcher)
-            {:error, err}
+      :error ->
+        # if not, try to get the data
+        case get_feed_data(url) do
+          {:error, reason} -> {:error, reason}
+          {:ok, feed_data} -> 
+            # parse the feed and pin the real url
+            case PodcastFeeds.parse feed_data do
+              {:error, reason} -> {:error, reason}
+              {:ok, feed} ->
+                real_url = canonical_url(url, feed)
+                if real_url == url do
+                  # the url is canonical, it seems new, so start it
+                  feed_info = %Feeds.FeedFetcher.FeedInfo{ 
+                    url: url, 
+                    interval: 3600, 
+                    _id: "feed/" <> Feeds.Utils.Id.make(url),
+                    last_check: Date.universal
+                  }
+
+                  Feeds.FeedFetcher.Repository.insert_async(feed_info)
+                  {:ok, feed_id} = Feeds.FeedFetcher.Registry.start_feed(feed_info)
+                  {:ok, fetcher} = Feeds.FeedFetcher.Registry.get_feed(feed_id)
+                  {:ok, fetcher}
+                else
+                  # the canonical url differs, so try with the real url
+                  ensure_feed(url, retries + 1)
+                end
+            end
         end
-    after
-      120_000 -> 
-        FeedFetcher.stop(fetcher)
-        {:error, :timeout_on_fetcher}
     end
-    # dont forget to stop our event menager
-    GenEvent.stop(evmgr)
-    # retry if possiblr, but keep a count of retries
-    case result do
-      {:error, {:self_ref_differs, real_url}} -> 
-        # IO.puts "retrying because self ref differs: #{url} vs #{real_url} / #{retries}"
-        try_feed(real_url, retries + 1)
-      {:error, {:first_page_differs, real_url}} -> 
-        # IO.puts "retrying because first page differs: #{url} vs #{real_url} / #{retries}"
-        try_feed(real_url, retries + 1)
-      # {:error, {:http_temporary_redirect, real_url}} -> 
-      #   IO.puts "retrying because of temp redirect: #{url} vs #{real_url} / #{retries}"
-      #   try_feed(real_url, retries + 1)
-      res ->
-        res
+  end
+  
+  defp check_for_existing_feed(url) do
+    id = "feed/" <> Feeds.Utils.Id.make(url)
+    Feeds.FeedFetcher.Registry.get_feed(id)
+  end
+
+  defp get_feed_data(url) do
+    case :hackney.get(url, ["User-Agent": "podcast-directory-fetcher-1.0--we-come-in-peace"], "", 
+      [follow_redirect: true, max_redirect: 10, recv_timeout: 30000]) do
+        {:ok, 200, _, ref} ->
+          case :hackney.body(ref) do
+            {:error, err} -> {:error, err} # <- this is where receive timeouts end up, i.e. the server sends the data too slow
+            {:ok, body} -> {:ok, body}
+          end
+        {:ok, non_200_status, _headers, ref} ->
+          {:error, "non-200: #{non_200_status}"}
+        {:error, err} ->
+          {:error, err}
+        error ->
+          {:error, "unknown #{inspect error}"}
+    end
+  end
+
+  defp href_from_atom_by_rel(atom_links, rel, default) do
+    atom_links
+    |> Enum.find_value(default, fn(al) ->
+      al.rel == rel && al.href && al.href != "" && al.href
+    end)
+  end
+
+  defp canonical_url(url, feed) do
+    atom_links = feed.meta.atom_links
+    self_url = href_from_atom_by_rel(atom_links, "self", nil)
+    first_url = href_from_atom_by_rel(atom_links, "first", nil)
+    case {first_url, self_url, url == first_url, url == self_url} do
+      {nil, nil, _, _} -> url
+      {nil, _self_url, _, true} -> url
+      {nil, self_url, _, false} -> self_url
+      {_first_url, _, true, _} -> url
+      {first_url, _, false, _} -> first_url
     end
   end
 

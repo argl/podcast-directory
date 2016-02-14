@@ -21,8 +21,8 @@ defmodule Feeds.Supervisor do
       worker(@podcast_registry_name, [@podcast_sup_name, @evmgr_name]),
 
       worker(@feed_fetcher_repository_name, [[name: @feed_fetcher_repository_name]]),
-      supervisor(@feed_fetcher_sup_name, [[name: @feed_fetcher_sup_name]]),
       
+      supervisor(@feed_fetcher_sup_name, [[name: @feed_fetcher_sup_name]]),
       worker(@feed_fetcher_registry_name, [@feed_fetcher_sup_name, @evmgr_name, [name: @feed_fetcher_registry_name]])
     ]
 

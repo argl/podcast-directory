@@ -138,7 +138,7 @@ defmodule Feeds.FeedFetcherTest do
     feed_fetcher = assert_feed_and_trigger feed_info, evmgr, podcast_registry
 
     assert :nil == FeedFetcher.error(feed_fetcher)
-    assert "podcast/localhost-8081/feed/localhost-8081-example.xml" == FeedFetcher.feed_info(feed_fetcher)._id
+    assert "feed/localhost-8081-example.xml" == FeedFetcher.feed_info(feed_fetcher)._id
   end
 
   test "reports on network errors", %{evmgr: evmgr, podcast_registry: podcast_registry} do

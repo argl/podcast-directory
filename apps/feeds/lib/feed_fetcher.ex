@@ -37,7 +37,7 @@ defmodule Feeds.FeedFetcher do
   @feed_fetcher_repository_name Feeds.FeedFetcher.Repository
 
   def start_link(%FeedInfo{}=feed_info, 
-    events \\ @evmgr_name, 
+    events \\ @evmgr_name,
     podcast_registry \\ @podcast_registry_name,
     repo \\ @feed_fetcher_repository_name,
     opts \\ []) do
@@ -203,7 +203,8 @@ defmodule Feeds.FeedFetcher do
 
     # also, create a proper id for ourselve
     if feed_info._id == nil && podcast_id != nil do
-      feed_id = podcast_id <> "/feed/" <> Feeds.Utils.Id.make(feed_info.url)
+      # feed_id = podcast_id <> "/feed/" <> Feeds.Utils.Id.make(feed_info.url)
+      feed_id = "feed/" <> Feeds.Utils.Id.make(feed_info.url)
       feed_info = %FeedInfo{feed_info | _id: feed_id}
     end
 
@@ -302,7 +303,7 @@ defmodule Feeds.FeedFetcher do
     }
   end
 
-  defp href_from_atom_by_rel(atom_links, rel, default) do
+  def href_from_atom_by_rel(atom_links, rel, default) do
     atom_links
     |> Enum.find_value(default, fn(al) ->
       al.rel == rel && al.href && al.href != "" && al.href
