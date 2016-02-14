@@ -1,0 +1,14 @@
+{
+  "name": "podcast-directory",
+  "version": "1.0.0",
+  "private": false,
+  "repository": "https://github.com/argl/podcast-directory",
+  "license": "MIT",
+  "scripts": {},
+  "dependencies": {
+    "couchdb-bootstrap": "^1.13.0",
+    "couchdb-compile": "^1.6.2",
+    "docuri": "^4.2.1"
+  },
+  "devDependencies": {}
+}

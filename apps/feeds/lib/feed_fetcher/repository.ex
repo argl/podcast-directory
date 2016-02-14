@@ -90,7 +90,7 @@ defmodule Feeds.FeedFetcher.Repository do
   def handle_cast({:insert, feed_info}, state) do
     # get rev from existing
     feed_info = case Client.open_doc(state.db, feed_info._id) do
-      {:ok, doc} -> %FeedInfo{feed_info | _rev: doc._rev}
+      {:ok, doc} -> %{feed_info | _rev: doc._rev}
       {:error, _} -> feed_info
     end
     encoded = encode_feed_info(feed_info)

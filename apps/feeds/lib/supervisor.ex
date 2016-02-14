@@ -17,12 +17,13 @@ defmodule Feeds.Supervisor do
 
   def init(:ok) do
     children = [
-      # supervisor(@podcast_sup_name, [[name: @podcast_sup_name]]),
-      # worker(@podcast_registry_name, [@podcast_sup_name, @evmgr_name]),
+      supervisor(@podcast_sup_name, [[name: @podcast_sup_name]]),
+      worker(@podcast_registry_name, [@podcast_sup_name, @evmgr_name]),
 
-      # worker(@feed_fetcher_repository_name, [[name: @feed_fetcher_repository_name]]),
-      # supervisor(@feed_fetcher_sup_name, [[name: @feed_fetcher_sup_name]]),
-      # worker(@feed_fetcher_registry_name, [@feed_fetcher_sup_name, @evmgr_name, [name: @feed_fetcher_registry_name]])
+      worker(@feed_fetcher_repository_name, [[name: @feed_fetcher_repository_name]]),
+      supervisor(@feed_fetcher_sup_name, [[name: @feed_fetcher_sup_name]]),
+      
+      worker(@feed_fetcher_registry_name, [@feed_fetcher_sup_name, @evmgr_name, [name: @feed_fetcher_registry_name]])
     ]
 
     supervise(children, strategy: :one_for_all)

@@ -1,4 +1,4 @@
-defmodule Admin.Endpoint do
+post Admin.Endpoint do
   use Phoenix.Endpoint, otp_app: :admin
 
   socket "/socket", Admin.UserSocket
