@@ -94,9 +94,16 @@ defmodule Feeds.FeedFetcher.Repository do
       {:error, _} -> feed_info
     end
     encoded = encode_feed_info(feed_info)
-    # IO.inspect encoded
-    {:ok, [resp]} = Client.save_docs(state.db, [encoded])
-    # _feed_info = %FeedInfo{feed_info | _rev: resp.rev}
+    case Client.save_docs(state.db, [encoded]) do
+      {:ok, [resp]} -> 
+        {:noreply, state}
+      {:error, reason} -> 
+        IO.inspect " == error: #{reason}"
+        IO.inspect encoded
+        Client.open_doc(state.db, feed_info._id)
+        |> IO.inspect
+        {:noreply, state}
+    end
     {:noreply, state}
   end
 

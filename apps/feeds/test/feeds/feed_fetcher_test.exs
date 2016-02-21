@@ -1,5 +1,5 @@
 defmodule Feeds.FeedFetcherTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Feeds.FeedFetcher
   alias Feeds.FeedFetcher.FeedInfo

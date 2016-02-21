@@ -45,6 +45,14 @@ defmodule Feeds.FeedManagerTest do
     assert existing_feed == feed
   end
 
+  test "ensure the canonical url is used" do
+    {:ok, feed} = FeedManager.ensure_feed "http://localhost:8081/example_self_ref_differs.xml"
+    assert is_pid(feed)
+    feed_info = Feeds.FeedFetcher.feed_info(feed)
+    assert "http://localhost:8081/example.xml" == feed_info.url
+  end
+
+
   test "ensure the feed is registered and will poll again in the future" do
     url = "http://localhost:8081/example.xml"
     {:ok, feed} = FeedManager.ensure_feed url

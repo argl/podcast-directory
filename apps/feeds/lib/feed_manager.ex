@@ -44,7 +44,7 @@ defmodule Feeds.FeedManager do
                   {:ok, fetcher}
                 else
                   # the canonical url differs, so try with the real url
-                  ensure_feed(url, retries + 1)
+                  ensure_feed(real_url, retries + 1)
                 end
             end
         end
