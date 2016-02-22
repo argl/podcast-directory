@@ -23,9 +23,30 @@ defmodule Feeds do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Feeds.AppSupervisor]
     {:ok, pid} = Supervisor.start_link(children, opts) 
-
-    Feeds.PodcastManager.loadRepo(@repository_name)
-
+    Task.async(fn -> loadRepo() end)
     {:ok, pid}
   end
+
+  # API
+  # load all podcasts from the reposiotory and starts all fetching processes
+  def loadRepo() do
+    {:ok, docs} = Repository.all_podcasts @repository_name
+    docs |> Enum.each(fn(pc) -> 
+      Feeds.Podcast.Registry.start_podcast(pc)
+    end)
+    {:ok, :repo_loaded}
+  end
+
+  def addFeed(feed_url) do
+    {:error, :not_implemented}
+  end
+
+  def search(serch_term) do
+    []
+  end
+
+  def state do
+    %{}
+  end
+
 end
