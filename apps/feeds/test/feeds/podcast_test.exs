@@ -2,7 +2,7 @@ defmodule Feeds.PodcastTest do
   use ExUnit.Case, async: true
 
   alias Feeds.Podcast
-  alias Feeds.Podcast.PodcastInfo
+  alias Feeds.Podcast.Meta
   use Timex
 
   defmodule Forwarder do
@@ -20,7 +20,7 @@ defmodule Feeds.PodcastTest do
   end
 
   test "startup with events", %{evmgr: evmgr} do
-    podcast_info = %PodcastInfo{}
+    podcast_info = %Meta{}
     result = Podcast.start_link(podcast_info, evmgr)
     assert {:ok, podcast} = result
     assert is_pid(podcast)
@@ -29,7 +29,7 @@ defmodule Feeds.PodcastTest do
   end
 
   test "stop with events", %{evmgr: evmgr} do
-    podcast_info = %PodcastInfo{}
+    podcast_info = %Meta{}
     {:ok, podcast} = Podcast.start_link(podcast_info, evmgr)
 
     assert match? :ok,  Podcast.stop(podcast)

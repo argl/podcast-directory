@@ -3,7 +3,7 @@ defmodule Feeds.PodcastRegistryTest do
 
   alias Feeds.Podcast
   alias Feeds.Podcast.Registry
-  alias Feeds.Podcast.PodcastInfo
+  alias Feeds.Podcast.Meta
 
   defmodule Forwarder do
     use GenEvent
@@ -28,23 +28,23 @@ defmodule Feeds.PodcastRegistryTest do
   end
 
   test "start_podcast", %{registry: registry} do
-    podcast_info = %PodcastInfo{_id: "test"}
+    podcast_info = %Meta{_id: "test"}
     assert match? {:ok, "test"}, Registry.start_podcast(registry, podcast_info)
     assert match? {:ok, "test"}, Registry.start_podcast(registry, podcast_info)
 
-    podcast_info = %PodcastInfo{}
+    podcast_info = %Meta{}
     assert match? {:error, :invalid_podcast_info}, Registry.start_podcast(registry, podcast_info)
   end
 
   test "sends events on create", %{registry: registry} do
-    podcast_info = %PodcastInfo{_id: "test"}
+    podcast_info = %Meta{_id: "test"}
     {_ok, id} = Registry.start_podcast(registry, podcast_info)
     {:ok, podcast} = Registry.get_podcast(registry, id)
     assert_receive {:podcast_registry_podcast_start, ^id, ^podcast}
   end
 
   test "sends events on exit", %{registry: registry} do
-    podcast_info = %PodcastInfo{_id: "test"}
+    podcast_info = %Meta{_id: "test"}
     {:ok, id} = Registry.start_podcast(registry, podcast_info)
     {:ok, pid} = Registry.get_podcast(registry, id)
     {:ok, :stopped} = Registry.stop_podcast(registry, id)   
@@ -52,7 +52,7 @@ defmodule Feeds.PodcastRegistryTest do
   end
 
   test "get_podcast", %{registry: registry} do
-    podcast_info = %PodcastInfo{_id: "test"}
+    podcast_info = %Meta{_id: "test"}
     {:ok, id} = Registry.start_podcast(registry, podcast_info)
 
     {:ok, pid} = Registry.get_podcast(registry, id)
@@ -62,7 +62,7 @@ defmodule Feeds.PodcastRegistryTest do
 
     assert match? :error, Registry.get_podcast(registry, "non existing id")
 
-    podcast_info = %PodcastInfo{_id: "test2"}
+    podcast_info = %Meta{_id: "test2"}
     {:ok, id2} = Registry.start_podcast(registry, podcast_info)
     {:ok, pid2} = Registry.get_podcast(registry, id2)
     assert id != id2
@@ -70,7 +70,7 @@ defmodule Feeds.PodcastRegistryTest do
   end
 
   test "stop_podcast", %{registry: registry} do
-    podcast_info = %PodcastInfo{_id: "test"}
+    podcast_info = %Meta{_id: "test"}
     {:ok, id} = Registry.start_podcast(registry, podcast_info)
     {:ok, pid} = Registry.get_podcast(registry, id)
     assert is_pid(pid)
@@ -80,9 +80,9 @@ defmodule Feeds.PodcastRegistryTest do
   end
 
   test "stop_all", %{registry: registry} do
-    podcast_info = %PodcastInfo{_id: "test"}
+    podcast_info = %Meta{_id: "test"}
     {:ok, id} = Registry.start_podcast(registry, podcast_info)
-    podcast_info = %PodcastInfo{_id: "test2"}
+    podcast_info = %Meta{_id: "test2"}
     {:ok, id2} = Registry.start_podcast(registry, podcast_info)
 
     assert match? {:ok, :all_stopped}, Registry.stop_all(registry)
@@ -92,7 +92,7 @@ defmodule Feeds.PodcastRegistryTest do
   end
 
   test "removes podcast on exit", %{registry: registry} do
-    {:ok, id} = Registry.start_podcast(registry, %PodcastInfo{_id: "test"})
+    {:ok, id} = Registry.start_podcast(registry, %Meta{_id: "test"})
     {:ok, pid} = Registry.get_podcast(registry, id)
     Podcast.stop(pid)
     assert_receive {:podcast_registry_podcast_exit, ^id, ^pid}
@@ -100,7 +100,7 @@ defmodule Feeds.PodcastRegistryTest do
   end
 
   test "removes podcast on crash", %{registry: registry} do
-    {:ok, id} = Registry.start_podcast(registry, %PodcastInfo{_id: "test"})
+    {:ok, id} = Registry.start_podcast(registry, %Meta{_id: "test"})
     {:ok, podcast} = Registry.get_podcast(registry, id)
 
     Process.exit(podcast, :shutdown)

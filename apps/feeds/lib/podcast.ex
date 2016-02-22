@@ -3,17 +3,17 @@ defmodule Feeds.Podcast do
   use GenServer
   use Timex
 
-  defmodule PodcastInfo do
+  defmodule Meta do
     defstruct _id: nil,
       _rev: nil,
-      pd_type: "podcast",
+      #pd_type: "podcast",
       title: nil,
       subtitle: nil,
       summary: nil,
       link: nil,
-      generator: nil,
-      last_build_date: nil,
-      publication_date: nil,
+      #generator: nil,
+      #last_build_date: nil,
+      #publication_date: nil,
       description: nil,
       author: nil,
       language: nil,
@@ -30,7 +30,7 @@ defmodule Feeds.Podcast do
   defmodule Episode do
     defstruct _id: nil,
       _rev: nil,
-      pd_type: "episode",
+      #pd_type: "episode",
       sorter: nil,
       title: nil,
       subtitle: nil,
@@ -43,7 +43,6 @@ defmodule Feeds.Podcast do
       image: nil,
       categories: [],
       guid: nil,
-      publication_date: nil,
       source: nil,
       chapters: [],
       atom_links: [],
@@ -54,7 +53,7 @@ defmodule Feeds.Podcast do
   defmodule Media do
     defstruct _id: nil,
       _rev: nil,
-      pd_type: "media",
+      #pd_type: "media",
       url: nil,
       type: nil,
       length: nil
@@ -68,7 +67,7 @@ defmodule Feeds.Podcast do
 
   ## Client API
 
-  def start_link(%PodcastInfo{}=podcast, events, opts \\ []) do
+  def start_link(%Meta{}=podcast, events, opts \\ []) do
     GenServer.start_link(__MODULE__, %{podcast: podcast, events: events}, opts)
   end
 

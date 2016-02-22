@@ -1,5 +1,8 @@
-defmodule Feeds.Podcast.Registry do
+defmodule Feeds.PodcastManager do
+
   use GenServer
+  use Timex
+
 
   @name __MODULE__
 
@@ -13,27 +16,17 @@ defmodule Feeds.Podcast.Registry do
     GenServer.call(name, :stop)
   end
 
-
-  def start_podcast(name \\ @name, %Feeds.Podcast.Meta{}=podcast_info) do
-    GenServer.call(name, {:start_podcast, podcast_info})
+  # this is called on app startup
+  # these should be a bunch of functions, not a gen server, most probably
+  # we dont carry state i think
+  # and we are the api of the whole podcast / feed susystem
+  def loadRepo(name \\ @name, repo) do
+    {:ok, docs} = Repository.all_podcasts repo
+    docs |> Enum.each(fn(pc) -> 
+      Feeds.Podcast.Registry.start_podcast(pc)
+    end)
   end
 
-  def stop_podcast(name \\ @name, id) do
-    GenServer.call(name, {:stop_podcast, id})
-  end 
-
-  def stop_all(name \\ @name) do
-    GenServer.call(name, :stop_all)
-  end
-
-  def get_podcast(name \\ @name, id) do
-    GenServer.call(name, {:get_podcast, id})
-  end
-
-  # debug
-  def state(name \\ @name) do
-    GenServer.call(name, :state)
-  end
 
 
 
@@ -115,3 +108,5 @@ defmodule Feeds.Podcast.Registry do
   end
 
 end
+
+

@@ -98,8 +98,6 @@ defmodule Feeds.FeedFetcher.Repository do
       {:ok, [resp]} -> 
         {:noreply, state}
       {:error, reason} -> 
-        IO.inspect " == error: #{reason}"
-        IO.inspect encoded
         Client.open_doc(state.db, feed_info._id)
         |> IO.inspect
         {:noreply, state}

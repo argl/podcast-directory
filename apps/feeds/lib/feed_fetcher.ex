@@ -280,15 +280,15 @@ defmodule Feeds.FeedFetcher do
     podcast_id = "podcast/" <> Feeds.Utils.Id.make(feed.meta.link)
     episodes = feed.entries |> Enum.reverse |> entry(feed, podcast_id)
 
-    _podcast_info = %Feeds.Podcast.PodcastInfo{
+    _podcast_info = %Feeds.Podcast.Meta{
       _id: podcast_id,
       title: feed.meta.title,
       subtitle: feed.meta.itunes.subtitle,
       summary: feed.meta.itunes.summary,
       link: feed.meta.link,
-      generator: feed.meta.generator,
-      last_build_date: Feeds.Utils.Time.iso_date(feed.meta.last_build_date),
-      publication_date: Feeds.Utils.Time.iso_date(feed.meta.publication_date),
+      # generator: feed.meta.generator,
+      # last_build_date: Feeds.Utils.Time.iso_date(feed.meta.last_build_date),
+      # publication_date: Feeds.Utils.Time.iso_date(feed.meta.publication_date),
       description: feed.meta.description,
       author: feed.meta.author || feed.meta.itunes.author,
       language: feed.meta.language,

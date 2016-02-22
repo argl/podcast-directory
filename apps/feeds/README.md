@@ -31,3 +31,17 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
           [applications: [:feeds]]
         end
 
+
+
+Notes:
+
+New structure: 
+
+                          / Feed
+Podcast-Manager - Podcast - Feed
+                \         \ Feed
+                 \
+                  \ Podcast - Feed
+                            \ Feed
+
+Repository
