@@ -10,7 +10,6 @@ defmodule Feeds.Supervisor do
 
   @podcast_sup_name Feeds.Podcast.Supervisor
   @podcast_registry_name Feeds.Podcast.Registry
-  @podcast_manager_name Feeds.PodcastManager
 
   @evmgr_name Feeds.EventManager
 
@@ -20,7 +19,6 @@ defmodule Feeds.Supervisor do
 
       supervisor(@podcast_sup_name, [[name: @podcast_sup_name]]),
       worker(@podcast_registry_name, [@podcast_sup_name, @evmgr_name]),
-      worker(@podcast_manager_name, [@evmgr_name, [name: @podcast_manager_name]]),
 
       # worker(@feed_fetcher_repository_name, [[name: @feed_fetcher_repository_name]]),
       

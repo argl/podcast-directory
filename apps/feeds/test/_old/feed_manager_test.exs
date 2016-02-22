@@ -26,18 +26,21 @@ defmodule Feeds.FeedManagerTest do
   #   assert "feed/localhost-8081-example.xml" == feed_id
   # end
 
+  @tag skip: "old stuff"
   test "ensure a working feed" do
     {res, feed} = FeedManager.ensure_feed "http://localhost:8081/example.xml"
     assert res == :ok
     assert is_pid(feed)
   end
 
+  @tag skip: "old stuff"
   test "ensure a non-existent feed" do
     {res, feed} = FeedManager.ensure_feed "http://localhost:8081/no-feed-here.xml"
     assert res == :error
     assert feed == "non-200: 404"
   end
 
+  @tag skip: "old stuff"
   test "ensure an already started feed" do
     {_, existing_feed} = FeedManager.ensure_feed "http://localhost:8081/example.xml"
 
@@ -45,6 +48,7 @@ defmodule Feeds.FeedManagerTest do
     assert existing_feed == feed
   end
 
+  @tag skip: "old stuff"
   test "ensure the canonical url is used" do
     {:ok, feed} = FeedManager.ensure_feed "http://localhost:8081/example_self_ref_differs.xml"
     assert is_pid(feed)
@@ -53,6 +57,7 @@ defmodule Feeds.FeedManagerTest do
   end
 
 
+  @tag skip: "old stuff"
   test "ensure the feed is registered and will poll again in the future" do
     url = "http://localhost:8081/example.xml"
     {:ok, feed} = FeedManager.ensure_feed url

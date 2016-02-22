@@ -31,6 +31,7 @@ defmodule Feeds.FeedRegistryTest do
   end
 
 
+  @tag skip: "old stuff"
   test "start_feed", %{registry: registry} do
     feed_info = %FeedInfo{_id: "test", url: "http://test.at"}
     assert match? {:ok, "test"}, Registry.start_feed(registry, feed_info)
@@ -40,6 +41,7 @@ defmodule Feeds.FeedRegistryTest do
     assert match? {:error, :invalid_feed_info}, Registry.start_feed(registry, feed_info)
   end
 
+  @tag skip: "old stuff"
   test "sends events on create", %{registry: registry} do
     feed_info = %FeedInfo{_id: "test", url: "http://test.at"}
     {_ok, id} = Registry.start_feed(registry, feed_info)
@@ -47,6 +49,7 @@ defmodule Feeds.FeedRegistryTest do
     assert_receive {:feed_registry_feed_start, ^id, ^feed_fetcher}
   end
 
+  @tag skip: "old stuff"
   test "sends events on exit", %{registry: registry} do
     feed_info = %FeedInfo{_id: "test", url: "http://test.at"}
     {:ok, id} = Registry.start_feed(registry, feed_info)
@@ -55,6 +58,7 @@ defmodule Feeds.FeedRegistryTest do
     assert_receive {:feed_registry_feed_exit, ^id, ^pid}
   end
 
+  @tag skip: "old stuff"
   test "get_feed", %{registry: registry} do
     feed_info = %FeedInfo{_id: "test", url: "http://test.at"}
     {:ok, id} = Registry.start_feed(registry, feed_info)
@@ -73,6 +77,7 @@ defmodule Feeds.FeedRegistryTest do
     assert pid != pid2
   end
 
+  @tag skip: "old stuff"
   test "stop_feed", %{registry: registry} do
     feed_info = %FeedInfo{_id: "test", url: "http://test.at"}
     {:ok, id} = Registry.start_feed(registry, feed_info)
@@ -83,6 +88,7 @@ defmodule Feeds.FeedRegistryTest do
     assert match? :error, Registry.get_feed(registry, id)
   end
 
+  @tag skip: "old stuff"
   test "stop_all", %{registry: registry} do
     feed_info = %FeedInfo{_id: "test", url: "http://test.at"}
     {:ok, id} = Registry.start_feed(registry, feed_info)
@@ -95,6 +101,7 @@ defmodule Feeds.FeedRegistryTest do
     assert match? :error, Registry.get_feed(registry, id2)
   end
 
+  @tag skip: "old stuff"
   test "removes feed fetchers on exit", %{registry: registry} do
     {:ok, id} = Registry.start_feed(registry, %FeedInfo{_id: "test", url: "http://test.at"})
     {:ok, pid} = Registry.get_feed(registry, id)
@@ -103,6 +110,7 @@ defmodule Feeds.FeedRegistryTest do
     assert match? :error, Registry.get_feed(registry, id)
   end
 
+  @tag skip: "old stuff"
   test "removes feed fetcher on crash", %{registry: registry} do
     {:ok, id} = Registry.start_feed(registry, %FeedInfo{_id: "test", url: "http://test.at"})
     {:ok, feed_fetcher} = Registry.get_feed(registry, id)

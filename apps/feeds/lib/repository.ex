@@ -18,8 +18,8 @@ defmodule Feeds.Repository do
     GenServer.call(name, :stop)
   end
 
-  def all(name \\ @name, options \\ %{}) do
-    GenServer.call(name, {:all, options})
+  def all_podcasts(name \\ @name) do
+    GenServer.call(name, :all_podcasts)
   end
 
 
@@ -35,14 +35,15 @@ defmodule Feeds.Repository do
     {:stop, :normal, :ok, state}
   end
 
+
   def handle_call(:all_podcasts, _from, state) do
-    {:ok, res} = Client.fetch_view(state.db, "base", "podcasts-by-id", [
+    {:ok, res} = Client.fetch_view(state.db, "base", "podcasts-by-podcast-id", [
       reduce: false, 
       include_docs: true
     ])
     docs = res.rows 
     |> Enum.map(fn(row) ->
-      decode_document(Podcast, row.doc)
+      decode_document(Feeds.Podcast.Meta, row.doc)
     end)
 
     {:reply, {:ok, docs}, state}

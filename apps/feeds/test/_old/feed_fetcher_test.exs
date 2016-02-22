@@ -43,7 +43,7 @@ defmodule Feeds.FeedFetcherTest do
     {:ok, evmgr: evmgr, podcast_registry: podcast_registry}
   end
 
-
+  @tag skip: "old stuff"
   test "startup with events", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{}
 
@@ -54,6 +54,7 @@ defmodule Feeds.FeedFetcherTest do
     assert_receive {:feed_fetcher_start, ^feed_fetcher}    
   end
 
+  @tag skip: "old stuff"
   test "stop with events", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{}
     {:ok, feed_fetcher} = FeedFetcher.start_link(feed_info, evmgr, podcast_registry)
@@ -62,6 +63,7 @@ defmodule Feeds.FeedFetcherTest do
     assert_receive {:feed_fetcher_stop, ^feed_fetcher}
   end
 
+  @tag skip: "old stuff"
   test "data accessors", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{}
     {:ok, feed_fetcher} = FeedFetcher.start_link(feed_info, evmgr, podcast_registry)
@@ -77,6 +79,7 @@ defmodule Feeds.FeedFetcherTest do
 
   end
 
+  @tag skip: "old stuff"
   test "schedule fetching immediately if last_checked = nil and interval = nil", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{}
     feed_fetcher = assert_feed_and_trigger feed_info, evmgr, podcast_registry
@@ -93,6 +96,7 @@ defmodule Feeds.FeedFetcherTest do
     assert Date.diff(last_check, now, :secs) < 2
   end
 
+  @tag skip: "old stuff"
   test "schedule fetching immediately if last_checked plus interval is in the past", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     last_check = Date.from({2010,1,1})
     interval = 600
@@ -111,6 +115,7 @@ defmodule Feeds.FeedFetcherTest do
     assert Date.diff(last_check, now, :secs) < 2
   end
 
+  @tag skip: "old stuff"
   test "schedule fetching in the future if last_checked plus interval is in the future", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     last_check = Date.universal
     interval = 600
@@ -126,6 +131,7 @@ defmodule Feeds.FeedFetcherTest do
     assert time >= (interval * 1000) - 1000
   end
 
+  @tag skip: "old stuff"
   test "sets error correctly if no url in feed info", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{}
     feed_fetcher = assert_feed_and_trigger feed_info, evmgr, podcast_registry
@@ -133,6 +139,7 @@ defmodule Feeds.FeedFetcherTest do
     assert :no_url == FeedFetcher.error(feed_fetcher)
   end
 
+  @tag skip: "old stuff"
   test "parses a feed successfully", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{ url: "http://localhost:8081/example.xml" }
     feed_fetcher = assert_feed_and_trigger feed_info, evmgr, podcast_registry
@@ -141,6 +148,7 @@ defmodule Feeds.FeedFetcherTest do
     assert "feed/localhost-8081-example.xml" == FeedFetcher.feed_info(feed_fetcher)._id
   end
 
+  @tag skip: "old stuff"
   test "reports on network errors", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{ url: "http://localhost:63210/example.xml" }
     feed_fetcher = assert_feed_and_trigger feed_info, evmgr, podcast_registry
@@ -148,6 +156,7 @@ defmodule Feeds.FeedFetcherTest do
     assert :econnrefused = FeedFetcher.error(feed_fetcher)
   end
 
+  @tag skip: "old stuff"
   test "reports on non-200 status", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{ url: "http://localhost:8081/404.xml" }
     feed_fetcher = assert_feed_and_trigger feed_info, evmgr, podcast_registry
@@ -155,6 +164,7 @@ defmodule Feeds.FeedFetcherTest do
     assert "non-200: 404" = FeedFetcher.error(feed_fetcher)
   end
 
+  @tag skip: "old stuff"
   test "reports self ref errors", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{ url: "http://localhost:8081/example_self_ref_differs.xml" }
     feed_fetcher = assert_feed_and_trigger feed_info, evmgr, podcast_registry
@@ -162,6 +172,7 @@ defmodule Feeds.FeedFetcherTest do
     assert match? {:self_ref_differs, "http://localhost:8081/example.xml"}, FeedFetcher.error(feed_fetcher)
   end
 
+  @tag skip: "old stuff"
   test "reports self paged errors", %{evmgr: evmgr, podcast_registry: podcast_registry} do
     feed_info = %FeedInfo{ url: "http://localhost:8081/example_not_first_page.xml" }
     feed_fetcher = assert_feed_and_trigger feed_info, evmgr, podcast_registry
@@ -219,45 +230,5 @@ defmodule Feeds.FeedFetcherTest do
     feed_fetcher
   end
 
-  # test "get" do
-  #   assert_response HTTPoison.get("localhost:8080/deny")
-  #   assert_response HTTPoison.get("localhost:8080/deny"), fn(response) ->
-  #     IO.inspect response.status_code
-  #     assert :erlang.size(response.body) == 197
-  #   end
-  # end
-
-  # @feed_url "http://cre.fm/feed/m4a/"
-
-  # setup do
-  #   HTTPoison.start
-  #   {:ok, feed} = Feeds.FeedFetcher.start_link(@feed_url)
-  #   {:ok, feed: feed}
-  # end
-
-  # test "set a url and fetch it", %{feed: feed} do
-  #   assert {:ok, title} = Feeds.FeedFetcher.update(feed)
-  #   assert title == "CRE: Technik, Kultur, Gesellschaft"
-  #   assert Feeds.FeedFetcher.url(feed) == @feed_url
-  #   assert Feeds.FeedFetcher.error(feed) == nil
-  #   assert Feeds.FeedFetcher.feed(feed).meta.title == "CRE: Technik, Kultur, Gesellschaft"
-  #   assert length(Feeds.FeedFetcher.feed(feed).entries) > 0
-  # end
-
-  # test "persist it", %{feed: feed} do
-  #   assert {:ok, title} = Feeds.FeedFetcher.update(feed)
-  #   assert {:ok, "podcast/cre-technik-kultur-gesellschaft/feed/http-cre-fm-feed-m4a"} = Feeds.FeedFetcher.persist(feed)
-  # end
-
-
-  # test "multiple instances" do
-  # end
-
-  # defp assert_response({:ok, response}, function \\ nil) do
-  #   assert is_list(response.headers)
-  #   assert response.status_code == 200
-  #   assert is_binary(response.body)
-  #   unless function == nil, do: function.(response)
-  # end
 
 end

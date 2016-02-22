@@ -19,6 +19,7 @@ defmodule Feeds.FeedRepositoryTest do
     {:ok, repo: repo}
   end
 
+  @tag skip: "old stuff"
   test "insert", %{repo: repo} do  
     feed_info = Feeds.TestHelpers.feed_info
     res = Repository.insert(repo, feed_info)
@@ -27,6 +28,7 @@ defmodule Feeds.FeedRepositoryTest do
     assert feed_info2._rev != feed_info._rev
   end
 
+  @tag skip: "old stuff"
   test "insert without id", %{repo: repo} do
     feed_info = Feeds.TestHelpers.feed_info
     feed_info = %FeedInfo{feed_info | _id: nil}
@@ -34,6 +36,7 @@ defmodule Feeds.FeedRepositoryTest do
     assert {:error, :no_id} = res
   end
 
+  @tag skip: "old stuff"
   test "get all", %{repo: repo} do
     feed_info = Feeds.TestHelpers.feed_info
     {:ok, feed_info} = Repository.insert(repo, feed_info)

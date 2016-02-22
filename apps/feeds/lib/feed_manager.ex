@@ -3,26 +3,30 @@ defmodule Feeds.FeedManager do
   alias Feeds.FeedFetcher
   use Timex
 
+  alias Feeds.Repository
 
   @podcast_registry_name Feeds.Podcast.Registry
   @feed_fetcher_registry_name Feeds.FeedFetcher.Registry
   @evmgr_name Feeds.EventManager
 
   # either {:ok, feed_fetcher_pid} or {:error, reason}
-  def ensure_feed(url) do
+  defp ensure_feed(url) do
     ensure_feed(url, 0)
   end
-  def ensure_feed(url, retries) when retries > 5 do
+  defp ensure_feed(url, retries) when retries > 5 do
     {:error, :too_many_redirects_from_canonical_url}
   end
-  def ensure_feed(url, retries) do
+  defp ensure_feed(url, retries) do
     # check if we have the feed in the database
-    case check_for_existing_feed(url) do
-      {:ok, fetcher} -> {:ok, fetcher}
-      :error ->
+    case Repository.feed_by_url(url) do
+      {:ok, feed} -> 
+        podcast_id = feed.podcast_id
+        Podcast.Registry.get_podcast(podcast_id)
+      {:error, :not_found} ->
         # if not, try to get the data
         case get_feed_data(url) do
-          {:error, reason} -> {:error, reason}
+          {:error, reason} -> 
+            {:error, reason}
           {:ok, feed_data} -> 
             # parse the feed and pin the real url
             case PodcastFeeds.parse feed_data do
@@ -38,7 +42,7 @@ defmodule Feeds.FeedManager do
                     last_check: Date.universal
                   }
 
-                  Feeds.FeedFetcher.Repository.insert_async(feed_info)
+                  Repository.insert(feed_info)
                   {:ok, feed_id} = Feeds.FeedFetcher.Registry.start_feed(feed_info)
                   {:ok, fetcher} = Feeds.FeedFetcher.Registry.get_feed(feed_id)
                   {:ok, fetcher}
@@ -49,11 +53,6 @@ defmodule Feeds.FeedManager do
             end
         end
     end
-  end
-  
-  defp check_for_existing_feed(url) do
-    id = "feed/" <> Feeds.Utils.Id.make(url)
-    Feeds.FeedFetcher.Registry.get_feed(id)
   end
 
   defp get_feed_data(url) do

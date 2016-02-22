@@ -1,6 +1,8 @@
 defmodule Feeds do
   use Application
 
+  alias Feeds.Repository
+
   @evmgr_name Feeds.EventManager
   @sup_name Feeds.Supervisor
   @repository_name Feeds.Repository
@@ -37,16 +39,20 @@ defmodule Feeds do
     {:ok, :repo_loaded}
   end
 
-  def addFeed(feed_url) do
-    {:error, :not_implemented}
+  def checkFeed(feed_url) do
+    Feeds.FeedManager.ensure_feed(feed_url)
   end
 
-  def search(serch_term) do
+  def search(_serch_term) do
     []
   end
 
   def state do
     %{}
   end
+
+
+
+
 
 end

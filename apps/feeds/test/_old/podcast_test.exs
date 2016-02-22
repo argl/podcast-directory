@@ -19,6 +19,7 @@ defmodule Feeds.PodcastTest do
     {:ok, evmgr: evmgr}
   end
 
+  @tag skip: "old stuff"
   test "startup with events", %{evmgr: evmgr} do
     podcast_info = %Meta{}
     result = Podcast.start_link(podcast_info, evmgr)
@@ -28,6 +29,7 @@ defmodule Feeds.PodcastTest do
     assert_receive {:podcast_start, ^podcast}    
   end
 
+  @tag skip: "old stuff"
   test "stop with events", %{evmgr: evmgr} do
     podcast_info = %Meta{}
     {:ok, podcast} = Podcast.start_link(podcast_info, evmgr)
