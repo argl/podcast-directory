@@ -8,7 +8,7 @@ defmodule Admin do
 
     children = [
       # Start the endpoint when the application starts
-      supervisor(Admin.Endpoint, []),
+      # supervisor(Admin.Endpoint, []),
       # Start the Ecto repository
       supervisor(Admin.Repo, []),
       # Here you could define other workers and supervisors as children
@@ -24,7 +24,7 @@ defmodule Admin do
   # Tell Phoenix to update the endpoint configuration
   # whenever the application is updated.
   def config_change(changed, _new, removed) do
-    Admin.Endpoint.config_change(changed, removed)
+    # Admin.Endpoint.config_change(changed, removed)
     :ok
   end
 end
