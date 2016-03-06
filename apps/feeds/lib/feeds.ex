@@ -29,8 +29,11 @@ defmodule Feeds do
     {:ok, pid}
   end
 
+
+
+
   # API
-  # load all podcasts from the reposiotory and starts all fetching processes
+  # load all podcasts from the repository and starts all fetching processes
   def loadRepo() do
     {:ok, docs} = Repository.all_podcasts @repository_name
     docs |> Enum.each(fn(pc) -> 
@@ -39,6 +42,7 @@ defmodule Feeds do
     {:ok, :repo_loaded}
   end
 
+  # this is how new feeds enter the system
   def checkFeed(feed_url) do
     Feeds.FeedManager.ensure_feed(feed_url)
   end

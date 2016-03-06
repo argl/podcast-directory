@@ -34,18 +34,31 @@ defmodule Feeds.FeedManager do
               {:ok, feed} ->
                 real_url = canonical_url(url, feed)
                 if real_url == url do
-                  # the url is canonical, it seems new, so start it
+                  # the url is canonical, it seems new.
+
+                  # check if we got an existing podcast fitting to our feed
+                  podcast_id = "podcast/" <> Feeds.Utils.Id.make(feed.meta.link)
+                  podcast = case Repository.podcast_by_id do
+                    {:error, :not_found} ->
+                      pc = podcast_from_feed(feed)
+                      {:ok, podcast} = Respository.insert(pc)
+                    {:ok, podcast} ->
+                      podcast
+                  end
+
                   feed_info = %Feeds.FeedFetcher.FeedInfo{ 
                     url: url, 
                     interval: 3600, 
                     _id: "feed/" <> Feeds.Utils.Id.make(url),
                     last_check: Date.universal
                   }
+                  {:ok, feed_info} = Repository.insert(feed_info)
 
-                  Repository.insert(feed_info)
-                  {:ok, feed_id} = Feeds.FeedFetcher.Registry.start_feed(feed_info)
-                  {:ok, fetcher} = Feeds.FeedFetcher.Registry.get_feed(feed_id)
-                  {:ok, fetcher}
+                  Podcast.Registry.start_podcast(podcast)
+
+                  # {:ok, feed_id} = Feeds.FeedFetcher.Registry.start_feed(feed_info)
+                  # {:ok, fetcher} = Feeds.FeedFetcher.Registry.get_feed(feed_id)
+                  # {:ok, fetcher}
                 else
                   # the canonical url differs, so try with the real url
                   ensure_feed(real_url, retries + 1)
@@ -90,6 +103,33 @@ defmodule Feeds.FeedManager do
       {_first_url, _, true, _} -> url
       {first_url, _, false, _} -> first_url
     end
+  end
+
+  defp podcast_from_feed(feed) do
+    podcast_id = "podcast/" <> Feeds.Utils.Id.make(feed.meta.link)
+    episodes = feed.entries |> Enum.reverse |> entry(feed, podcast_id)
+
+    %Feeds.Podcast.Meta{
+      _id: podcast_id,
+      title: feed.meta.title,
+      subtitle: feed.meta.itunes.subtitle,
+      summary: feed.meta.itunes.summary,
+      link: feed.meta.link,
+      # generator: feed.meta.generator,
+      # last_build_date: Feeds.Utils.Time.iso_date(feed.meta.last_build_date),
+      # publication_date: Feeds.Utils.Time.iso_date(feed.meta.publication_date),
+      description: feed.meta.description,
+      author: feed.meta.author || feed.meta.itunes.author,
+      language: feed.meta.language,
+      copyright: feed.meta.copyright,
+      categories: if(feed.meta.categories != [], do: feed.meta.categories, else: feed.meta.itunes.categories),
+      managing_editor: feed.meta.managing_editor,
+      web_master: feed.meta.web_master,
+      image: feed.meta.image,
+      explicit: feed.meta.itunes.explicit || false,
+      #atom_links_remove_me: state.feed.meta.atom_links,
+      episodes: episodes
+    }
   end
 
 end

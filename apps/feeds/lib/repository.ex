@@ -21,6 +21,15 @@ defmodule Feeds.Repository do
   def all_podcasts(name \\ @name) do
     GenServer.call(name, :all_podcasts)
   end
+  def podcast_by_id(name \\ @name, id) do
+    GenServer.call(name, {:podcast, id})
+  end
+  def feed_by_url(name \\ @name, url) do
+    GenServer.call(name, {:feed_by_url, url})
+  end
+  def insert(name \\ @name, doc) do
+    GenServer.call(name, {:insert, doc})
+  end
 
 
   ## Server Callbacks
@@ -49,24 +58,67 @@ defmodule Feeds.Repository do
     {:reply, {:ok, docs}, state}
   end
 
+  def handle_call({:podcast_by_id, id}, _from, state) do
+    {:ok, res} = Client.fetch_view(state.db, "base", "podcast_by_podcast_id", [
+      reduce: false,
+      key: id,
+      include_docs: true,
+      limit: 1
+    ])
+    case res.rows do
+      [] -> 
+        {:reply, {:error, :not_found}, state}
+      [doc] ->
+        {:reply, {:ok, decode_document(Feeds.Podcast.Meta, doc)}, state}
+    end
+  end
+
+
+  def handle_call({:feed_by_url, url}, _from, state) do
+    {:ok, res} = Client.fetch_view(state.db, "base", "feeds-by-url", [
+      reduce: false,
+      key: url,
+      include_docs: true,
+      limit: 1
+    ])
+    case res.rows do
+      [] -> 
+        {:reply, {:error, :not_found}, state}
+      [doc] ->
+        {:reply, {:ok, decode_document(Feeds.FeedFetcher.FeedInfo, doc)}, state}
+    end
+  end
+
+  def handle_call({:insert, doc}, _from, state) do
+    # get rev from existing
+    doc = case Client.open_doc(state.db, doc._id) do
+      {:ok, doc} -> %{doc | _rev: doc._rev}
+      {:error, _} -> doc
+    end
+    encoded = encode_feed_info(doc)
+    # IO.inspect encoded
+    {:ok, [resp]} = Client.save_docs(state.db, [encoded])
+    doc = %{doc | _rev: resp.rev}
+    {:reply, {:ok, doc}, state}
+  end
 
 
 
 
   defp decode_document(struct, document) do
     struct(struct, document)
-    # %FeedInfo{
-    #   _id: doc._id,
-    #   _rev: doc._rev,
-    #   title: doc.title,
-    #   url: doc.url,
-    #   format: doc.format,
-    #   new_feed_url: doc.new_feed_url,
-    #   error: doc.error,
-    #   last_check: doc.last_check |> DateFormat.parse("{ISO}"),
-    #   interval: doc.interval,
-    #   podcast_id: doc.podcast_id
-    # }
   end
+
+
+  defp encode_feed_info(feed_info) do
+    feed_info |> encode_timestamp_fields([:last_check])
+  end
+
+  defp encode_timestamp_fields(feed_info, fields) do
+    Enum.reduce(fields, feed_info, fn(field, feed_info) -> 
+      Map.put(feed_info, field, Feeds.Utils.Time.iso_date(Map.get(feed_info, field)))
+    end)
+  end
+
 
 end
